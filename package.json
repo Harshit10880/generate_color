@@ -1,6 +1,13 @@
 {
+  "name": "generate-colour",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "dotenv": "^17.2.3",
-    "mongoose": "^9.1.1"
+    "express": "^4.19.2",
+    "mongoose": "^9.1.1",
+    "dotenv": "^17.2.3"
   }
 }
