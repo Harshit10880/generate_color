@@ -553,33 +553,6 @@
     </div> -->
 
 
-    <div class="glass-panel" style="margin-top: 40px;">
-        <span class="section-label">3. Developer Feedback</span>
-        <div style="display: grid; gap: 20px;">
-            <div>
-                <label
-                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Full
-                    Name</label>
-                <input type="text" id="fullName" placeholder="Enter your full name"
-                    style="width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; outline: none; font-family: inherit;">
-            </div>
-
-            <div>
-                <label
-                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Rate
-                    the Generation</label>
-                <div id="starRating" style="display: flex; gap: 10px; font-size: 1.5rem; cursor: pointer;">
-                    <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span
-                        data-v="4">☆</span><span data-v="5">☆</span>
-                </div>
-            </div>
-            <textarea id="feedbackText" placeholder="How can we improve the AI logic?"
-                style="width: 100%; height: 100px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; padding: 15px; outline: none; font-family: inherit;"></textarea>
-            <button class="btn btn-primary" id="submitFeedback" style="width: fit-content;"
-                onclick="submitFeedback()">Submit Feedback</button>
-        </div>
-    </div>
-
     <script>
         const paletteContainer = document.getElementById('paletteContainer');
         const aiLoader = document.getElementById('aiLoader');
