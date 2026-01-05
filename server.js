@@ -2,18 +2,24 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const path = require("path");
 
 const app = express();
-
-// Middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Error:", err));
+let isConnected = false;
+
+// MongoDB connection (serverless-safe)
+async function connectDB() {
+  if (isConnected) return;
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
+    console.log("✅ MongoDB Connected");
+  } catch (err) {
+    console.error("❌ MongoDB Error:", err);
+  }
+}
+connectDB();
 
 // Schema
 const feedbackSchema = new mongoose.Schema({
@@ -24,19 +30,20 @@ const feedbackSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const Feedback = mongoose.model("Feedback", feedbackSchema);
+const Feedback =
+  mongoose.models.Feedback || mongoose.model("Feedback", feedbackSchema);
 
-// API route
+// Route
 app.post("/api/feedback", async (req, res) => {
   try {
     const { fullName, rating, comment, palette } = req.body;
 
     if (!fullName || !rating) {
-      return res.status(400).json({ message: "Name and rating are required" });
+      return res.status(400).json({ message: "Name and rating required" });
     }
 
     await Feedback.create({ fullName, rating, comment, palette });
-    res.json({ message: "Feedback saved successfully" });
+    res.json({ message: "Feedback saved" });
 
   } catch (err) {
     console.error(err);
@@ -44,5 +51,4 @@ app.post("/api/feedback", async (req, res) => {
   }
 });
 
-// 🔥 IMPORTANT FOR VERCEL
 module.exports = app;

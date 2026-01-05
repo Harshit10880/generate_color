@@ -723,46 +723,36 @@
         });
 
         // Submission Simulation with Local File Saving
-        document.getElementById('submitFeedback').onclick = async function () {
-            const name = document.getElementById('fullName').value;
-            const comment = document.getElementById('feedbackText').value;
-
-            if (!name || !selectedRating) return alert("Please enter your name and rating.");
-
-            const originalText = this.innerHTML;
-            this.innerHTML = "Saving...";
-            this.disabled = true;
+        async function submitFeedback() {
+            const data = {
+                fullName: document.getElementById("name").value,
+                rating: selectedRating,
+                comment: document.getElementById("comment").value,
+                palette: currentPalette
+            };
 
             try {
-                // This sends data to your Node.js server, NOT an Excel file
-                const response = await fetch('/api/feedback', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fullName: name,
-                        rating: selectedRating,
-                        comment: comment,
-                        palette: currentPalette
-                    })
+                const res = await fetch("/api/feedback", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
                 });
 
-                const result = await response.json();
-                alert(result.message);
+                const result = await res.json();
 
-                // Reset form
-                document.getElementById('fullName').value = "";
-                document.getElementById('feedbackText').value = "";
-                selectedRating = 0;
-                document.querySelectorAll('#starRating span').forEach(s => s.innerHTML = '☆');
+                if (!res.ok) {
+                    alert(result.message || "Error saving feedback");
+                    return;
+                }
 
-            } catch (error) {
-                console.error('Error:', error);
-                alert("Server communication error.");
-            } finally {
-                this.innerHTML = originalText;
-                this.disabled = false;
+                alert("✅ Feedback saved successfully");
+            } catch (err) {
+                alert("❌ Server communication error");
+                console.error(err);
             }
-        };
+        }
     </script>
 </body>
 </html>
