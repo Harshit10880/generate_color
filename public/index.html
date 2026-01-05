@@ -575,7 +575,8 @@
             </div>
             <textarea id="feedbackText" placeholder="How can we improve the AI logic?"
                 style="width: 100%; height: 100px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; padding: 15px; outline: none; font-family: inherit;"></textarea>
-            <button class="btn btn-primary" id="submitFeedback" style="width: fit-content;">Submit Feedback</button>
+            <button class="btn btn-primary" id="submitFeedback" style="width: fit-content;"
+                onclick="submitFeedback()">Submit Feedback</button>
         </div>
     </div>
 
@@ -722,37 +723,42 @@
             };
         });
 
+
         // Submission Simulation with Local File Saving
-        async function submitFeedback() {
-            const data = {
-                fullName: document.getElementById("name").value,
-                rating: selectedRating,
-                comment: document.getElementById("comment").value,
-                palette: currentPalette
-            };
+async function submitFeedback() {
+    if (!selectedRating) {
+        alert("Please select a rating ⭐");
+        return;
+    }
 
-            try {
-                const res = await fetch("/api/feedback", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
+    const data = {
+        fullName: document.getElementById("fullName").value,
+        rating: selectedRating,
+        comment: document.getElementById("feedbackText").value,
+        palette: currentPalette
+    };
 
-                const result = await res.json();
+    try {
+        const res = await fetch("/api/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
 
-                if (!res.ok) {
-                    alert(result.message || "Error saving feedback");
-                    return;
-                }
+        const result = await res.json();
 
-                alert("✅ Feedback saved successfully");
-            } catch (err) {
-                alert("❌ Server communication error");
-                console.error(err);
-            }
+        if (!res.ok) {
+            alert(result.message || "Error saving feedback");
+            return;
         }
+
+        alert("✅ Feedback saved successfully");
+    } catch (err) {
+        alert("❌ Server communication error");
+        console.error(err);
+    }
+}
+
     </script>
 </body>
 </html>
