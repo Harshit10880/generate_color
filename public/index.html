@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodColor Pro | AI Palette Architect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --surface: #16161a;
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --accent: #6366f1;
+            --radius-lg: 24px;
+            --transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        header {
+            padding: 40px 10px 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Plus Jakarta Sans';
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            letter-spacing: -0.05em;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .mood-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .mood-pill {
+            padding: 8px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .mood-pill.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .config-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        @media (min-width: 768px) {
+            .config-row {
+                grid-template-columns: 1fr 1fr auto;
+            }
+
+            header {
+                padding: 80px 20px 40px;
+            }
+
+            .glass-panel {
+                padding: 30px;
+            }
+
+            .mood-grid {
+                justify-content: flex-start;
+                gap: 10px;
+            }
+        }
+
+        select,
+        input[type="range"] {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid var(--border);
+            color: #fff;
+            border-radius: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid var(--border);
+        }
+
+        /* --- Palette Stage --- */
+        .palette-stage {
+            margin-bottom: 20px;
+            background: #000;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .palette-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            gap: 6px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .palette-container {
+                flex-direction: row;
+                height: 480px;
+                gap: 8px;
+            }
+        }
+
+        .color-card {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        /* Expansion on hover for Desktop, active state for Mobile touch */
+        @media (hover: hover) {
+            .color-card:hover {
+                flex: 4;
+            }
+
+            .color-card:hover .color-info {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .color-card:active {
+                flex: 3;
+            }
+
+            .color-card:active .color-info {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        .color-info {
+            background: white;
+            color: black;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.4s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+        }
+
+        /* --- Loader --- */
+        .loader-overlay {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .circular-loader {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(99, 102, 241, 0.1);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+
+        .loader-dots {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(0.5);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        /* --- Toolbox --- */
+        .toolbox {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 640px) {
+            .toolbox {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .toolbox {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .tool-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.3s;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .tool-btn small {
+            display: block;
+            font-size: 0.6rem;
+            color: var(--accent);
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        /* --- Mockup --- */
+        .mockup-container {
+            background: #f4f7ff;
+            border-radius: 24px;
+            padding: 20px;
+            margin-top: 40px;
+            color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .mock-ui {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+        }
+
+        .mock-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .mockup-container {
+                padding: 50px;
+                margin-top: 60px;
+                border-radius: 32px;
+            }
+
+            .mock-ui {
+                padding: 40px;
+            }
+
+            .mock-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 120px;
+            margin-top: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .bar-chart {
+                gap: 8px;
+                height: 150px;
+                margin-top: 30px;
+            }
+        }
+
+        .chart-bar {
+            flex: 1;
+            border-radius: 4px;
+            transition: height 1s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>MoodColor Pro</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">High-fidelity generative design engine</p>
+        </header>
+
+        <div class="glass-panel">
+            <span class="section-label">1. Mood DNA</span>
+            <div class="mood-grid" id="moodGrid">
+                <button class="mood-pill active" data-mood="calm">Calm</button>
+                <button class="mood-pill" data-mood="energetic">Energetic</button>
+                <button class="mood-pill" data-mood="cyberpunk">Cyberpunk</button>
+                <button class="mood-pill" data-mood="happy">Happy</button>
+                <button class="mood-pill" data-mood="professional">Professional</button>
+                <button class="mood-pill" data-mood="forest">Forest</button>
+                <button class="mood-pill" data-mood="sunset">Sunset</button>
+                <button class="mood-pill" data-mood="luxury">Luxury</button>
+                <button class="mood-pill" data-mood="arctic">Arctic</button>
+                <button class="mood-pill" data-mood="desert">Desert</button>
+                <button class="mood-pill" data-mood="mint">Mint</button>
+                <button class="mood-pill" data-mood="chocolate">Chocolate</button>
+            </div>
+
+            <div class="config-row">
+                <div>
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block;">Palette
+                        Size</label>
+                    <select id="countSelect">
+                        <option value="5" selected>5 Colors</option>
+                        <option value="7">7 Colors</option>
+                        <option value="3">3 Colors</option>
+                    </select>
+                </div>
+                <div>
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block;">Vibrancy
+                        Intensity</label>
+                    <input type="range" id="vibrancy" min="0" max="100" value="70">
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="location.reload()">Reset</button>
+                    <button class="btn btn-primary" id="generateBtn">✨ Generate </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="palette-stage" id="paletteCaptureArea">
+            <div class="palette-container" id="paletteContainer">
+                <div class="loader-overlay" id="aiLoader">
+                    <div class="circular-loader">
+                        <div class="loader-ring"></div>
+                        <div class="loader-dots">
+                            <div class="dot"></div>
+                            <div class="dot" style="animation-delay: 0.2s"></div>
+                            <div class="dot" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                    <p style="letter-spacing: 0.3em; font-size: 0.6rem; color: var(--accent); font-weight: 800;">
+                        SYNTHESIZING VECTORS</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbox">
+            <button class="tool-btn" onclick="copyCSS()">
+                <small>Developer</small><b>Copy CSS Variables</b>
+            </button>
+            <button class="tool-btn" onclick="downloadJSON()">
+                <small>Structure</small><b>Export JSON</b>
+            </button>
+            <button class="tool-btn" onclick="exportImage('paletteCaptureArea', 'palette')">
+                <small>Asset</small><b>Save Palette PNG</b>
+            </button>
+            <button class="tool-btn" onclick="exportImage('previewCaptureArea', 'mockup')">
+                <small>Presentation</small><b>Save UI Mockup</b>
+            </button>
+        </div>
+
+        <div class="mockup-container" id="previewCaptureArea">
+            <span class="section-label" style="color: #888">2. Application Implementation</span>
+            <div class="mock-ui">
+                <div class="mock-header">
+                    <h2 id="mockTitle" style="font-family:'Plus Jakarta Sans'; font-size: 1.2rem;">Design System Core
+                    </h2>
+                    <div id="mockBtn"
+                        style="padding:10px 20px; border-radius:8px; color:white; font-weight:700; text-align: center; font-size: 0.9rem;">
+                        Action Button</div>
+                </div>
+                <div class="bar-chart" id="mockChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="glass-panel" style="margin-top: 40px;">
+        <span class="section-label">3. Developer Feedback</span>
+        <div style="display: grid; gap: 20px;">
+            <div>
+                <label
+                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Rate
+                    the Generation</label>
+                <div id="starRating" style="display: flex; gap: 10px; font-size: 1.5rem; cursor: pointer;">
+                    <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span
+                        data-v="4">☆</span><span data-v="5">☆</span>
+                </div>
+            </div>
+            <textarea id="feedbackText" placeholder="How can we improve the AI logic?"
+                style="width: 100%; height: 100px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; padding: 15px; outline: none; font-family: inherit;"></textarea>
+            <button class="btn btn-primary" id="submitFeedback" style="width: fit-content;">Submit Feedback</button>
+        </div>
+    </div> -->
+
+
+    <div class="glass-panel" style="margin-top: 40px;">
+        <span class="section-label">3. Developer Feedback</span>
+        <div style="display: grid; gap: 20px;">
+            <div>
+                <label
+                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Full
+                    Name</label>
+                <input type="text" id="fullName" placeholder="Enter your full name"
+                    style="width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; outline: none; font-family: inherit;">
+            </div>
+
+            <div>
+                <label
+                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Rate
+                    the Generation</label>
+                <div id="starRating" style="display: flex; gap: 10px; font-size: 1.5rem; cursor: pointer;">
+                    <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span
+                        data-v="4">☆</span><span data-v="5">☆</span>
+                </div>
+            </div>
+            <textarea id="feedbackText" placeholder="How can we improve the AI logic?"
+                style="width: 100%; height: 100px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; padding: 15px; outline: none; font-family: inherit;"></textarea>
+            <button class="btn btn-primary" id="submitFeedback" style="width: fit-content;">Submit Feedback</button>
+        </div>
+    </div>
+
+    <script>
+        const paletteContainer = document.getElementById('paletteContainer');
+        const aiLoader = document.getElementById('aiLoader');
+        const generateBtn = document.getElementById('generateBtn');
+        let currentPalette = [];
+
+        const moodEngine = {
+            calm: { h: [190, 240], s: [15, 35], l: [70, 90] },
+            energetic: { h: [35, 60], s: [85, 100], l: [50, 70] },
+            cyberpunk: { h: [270, 310], s: [80, 100], l: [40, 60] },
+            happy: { h: [10, 50], s: [70, 95], l: [60, 85] },
+            professional: { h: [210, 230], s: [30, 50], l: [15, 45] },
+            forest: { h: [90, 145], s: [30, 60], l: [20, 50] },
+            sunset: { h: [0, 45], s: [70, 90], l: [45, 65] },
+            luxury: { h: [35, 50], s: [30, 50], l: [10, 30] },
+            arctic: { h: [190, 210], s: [10, 30], l: [85, 98] },
+            desert: { h: [15, 35], s: [40, 70], l: [40, 70] },
+            mint: { h: [150, 180], s: [15, 40], l: [75, 92] },
+            chocolate: { h: [15, 30], s: [25, 45], l: [15, 35] }
+        };
+
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+        }
+
+        function generate() {
+            aiLoader.style.display = 'flex';
+            generateBtn.disabled = true;
+
+            setTimeout(() => {
+                const moodKey = document.querySelector('.mood-pill.active').dataset.mood;
+                const count = document.getElementById('countSelect').value;
+                const vibe = document.getElementById('vibrancy').value;
+                const config = moodEngine[moodKey];
+
+                let pool = [];
+                for (let i = 0; i < 40; i++) {
+                    let h = Math.floor(Math.random() * (config.h[1] - config.h[0]) + config.h[0]);
+                    let s = config.s[0] + (vibe / 100) * (config.s[1] - config.s[0]);
+                    let l = Math.floor(Math.random() * (config.l[1] - config.l[0]) + config.l[0]);
+                    pool.push(hslToHex(h, s, l));
+                }
+
+                currentPalette = pool.slice(0, count);
+                render();
+                updateMock();
+
+                aiLoader.style.display = 'none';
+                generateBtn.disabled = false;
+            }, 7000);
+        }
+
+        function render() {
+            const cards = paletteContainer.querySelectorAll('.color-card');
+            cards.forEach(c => c.remove());
+
+            currentPalette.forEach((hex, i) => {
+                const card = document.createElement('div');
+                card.className = 'color-card';
+                card.style.backgroundColor = hex;
+                card.style.opacity = '0';
+
+                card.innerHTML = `<div class="color-info">${hex}</div>`;
+
+                card.onclick = () => {
+                    navigator.clipboard.writeText(hex);
+                    alert(`Copied ${hex}`);
+                };
+                paletteContainer.appendChild(card);
+
+                setTimeout(() => card.style.opacity = '1', i * 100);
+            });
+        }
+
+        function updateMock() {
+            if (currentPalette.length === 0) return;
+            const primary = currentPalette[0];
+            const accent = currentPalette[currentPalette.length - 1];
+            document.getElementById('mockTitle').style.color = primary;
+            document.getElementById('mockBtn').style.backgroundColor = accent;
+            const chart = document.getElementById('mockChart');
+            chart.innerHTML = '';
+            [40, 80, 60, 100, 70, 90, 50].forEach((h, i) => {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = h + '%';
+                bar.style.backgroundColor = currentPalette[i % currentPalette.length];
+                chart.appendChild(bar);
+            });
+        }
+
+        function exportImage(id, name) {
+            html2canvas(document.getElementById(id), { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `${name}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function copyCSS() {
+            const css = currentPalette.map((c, i) => `--color-${i + 1}: ${c};`).join('\n');
+            navigator.clipboard.writeText(css); alert('CSS Copied!');
+        }
+
+        function downloadJSON() {
+            const blob = new Blob([JSON.stringify(currentPalette)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'palette.json'; a.click();
+        }
+
+        document.getElementById('moodGrid').onclick = (e) => {
+            if (e.target.classList.contains('mood-pill')) {
+                document.querySelectorAll('.mood-pill').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        };
+
+        document.getElementById('generateBtn').onclick = generate;
+        window.onload = () => {
+            currentPalette = ['#FFFFFF', '#EEEEEE', '#CCCCCC', '#999999', '#333333'];
+            render();
+            updateMock();
+        };
+
+        // Star Rating Logic
+        const stars = document.querySelectorAll('#starRating span');
+        let selectedRating = 0;
+
+        stars.forEach(star => {
+            star.onclick = () => {
+                selectedRating = star.dataset.v;
+                stars.forEach(s => s.innerHTML = s.dataset.v <= selectedRating ? '★' : '☆');
+                stars.forEach(s => s.style.color = s.dataset.v <= selectedRating ? 'var(--accent)' : 'var(--text-muted)');
+            };
+        });
+
+        // Submission Simulation with Local File Saving
+        document.getElementById('submitFeedback').onclick = async function () {
+            const name = document.getElementById('fullName').value;
+            const comment = document.getElementById('feedbackText').value;
+
+            if (!name || !selectedRating) return alert("Please enter your name and rating.");
+
+            const originalText = this.innerHTML;
+            this.innerHTML = "Saving...";
+            this.disabled = true;
+
+            try {
+                // This sends data to your Node.js server, NOT an Excel file
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: name,
+                        rating: selectedRating,
+                        comment: comment,
+                        palette: currentPalette
+                    })
+                });
+
+                const result = await response.json();
+                alert(result.message);
+
+                // Reset form
+                document.getElementById('fullName').value = "";
+                document.getElementById('feedbackText').value = "";
+                selectedRating = 0;
+                document.querySelectorAll('#starRating span').forEach(s => s.innerHTML = '☆');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert("Server communication error.");
+            } finally {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

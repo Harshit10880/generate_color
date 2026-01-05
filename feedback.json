@@ -1,0 +1,28 @@
+[
+  {
+    "fullName": "darshan raval",
+    "rating": "4",
+    "comment": "fsjfl;ajlkj;",
+    "palette": [
+      "#FFFFFF",
+      "#EEEEEE",
+      "#CCCCCC",
+      "#999999",
+      "#333333"
+    ],
+    "timestamp": "2026-01-05T02:29:50.964Z"
+  },
+  {
+    "fullName": "bob",
+    "rating": "3",
+    "comment": "jflsajflajfl;aj;l",
+    "palette": [
+      "#FFFFFF",
+      "#EEEEEE",
+      "#CCCCCC",
+      "#999999",
+      "#333333"
+    ],
+    "timestamp": "2026-01-05T02:30:49.915Z"
+  }
+]
